@@ -21,7 +21,7 @@ class _CardProvinceState extends State<CardProvince> {
       color: Colors.white,
       margin: const EdgeInsets.all(16),
       child: ListTile(
-        leading: const Icon(Icons.delivery_dining),
+        leading: const Icon(Icons.delivery_dining_rounded),
         contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         title: Text("${c.description} (${c.service})"),
         subtitle: Column(
@@ -31,7 +31,7 @@ class _CardProvinceState extends State<CardProvince> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("Biaya: Rp. ${c.cost[0].value}"),
-                Text("Estimasi Sampai: ${c.cost[0].etd} hari kerja"),
+                Text("Estimasi sampai tujuan: ${c.cost[0].etd} hari"),
               ],
             ),
           ],
