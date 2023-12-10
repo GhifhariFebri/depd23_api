@@ -25,8 +25,8 @@ class _HomePageState extends State<HomePage> {
   //   });
   // }
   TextEditingController yourTextController = TextEditingController();
-  dynamic courierData;
-  dynamic weight;
+  var courierData;
+  var weight;
   dynamic cityDataOrigin;
   dynamic cityIdOrigin;
   dynamic selectedCityOrigin;
@@ -64,23 +64,27 @@ class _HomePageState extends State<HomePage> {
     return province;
   }
 
-    Future<List<Costs>> getCosts() async {
-    ////
-    dynamic cost;
-    await MasterDataService.getCosts().then((value) {
+  List<Costs> costData = [];
+
+  Future<dynamic> getCost(
+      var courier, var origin, var destination, var weight) async {
+    dynamic costs;
+    await MasterDataService.getCost(origin, destination, weight, courier)
+        .then((value) {
       setState(() {
-        cost = value;
+        costs = value;
       });
+      isLoading = false;
     });
 
-    return cost;
+    return costs;
   }
 
   @override
   void initState() {
     super.initState();
     setState(() {
-      isLoading = true;
+      isLoading = false;
     });
     provinceDataDestination = getProvince();
     provinceDataOrigin = getProvince(); ////
@@ -480,8 +484,28 @@ class _HomePageState extends State<HomePage> {
                           vertical: 2.0), // Adjust padding as needed
                       child: ElevatedButton(
                         onPressed: () {
-                          // Add the functionality you want when the button is pressed
-                          // For example, you can open a new screen or perform an action.
+                          if (cityIdDestination == null ||
+                              cityIdOrigin == null ||
+                              weight < 1) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Fill in all fields to proceed.'),
+                                  behavior: SnackBarBehavior.floating),
+                            );
+                          } else {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            setState(() async {
+                              costData = await getCost(
+                                courierData,
+                                cityIdOrigin,
+                                cityIdDestination,
+                                weight,
+                              );
+                            });
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           primary: Colors.blue, // Set the button color
@@ -494,24 +518,24 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Flexible(
-                flex: 4,
-                child: Container(
+                flex: 1,
+                child: SizedBox(
                     width: double.infinity,
                     height: double.infinity,
-                    child: provinceData.isEmpty
+                    child: costData.isEmpty || costData[0].cost.isEmpty
                         ? const Align(
                             alignment: Alignment.center,
-                            child: Text("Data tidak ditemukan"),
+                            child: Text("Data not found"),
                           )
                         : ListView.builder(
-                            itemCount: provinceData.length,
+                            itemCount: costData.length,
                             itemBuilder: (context, index) {
-                              return CardProvince(provinceData[index]);
+                              return CardProvince(costData[index]);
                             })),
               ),
             ],
           ),
-          // isLoading == true ? UiLoading.loadingBlock() : Container()
+          isLoading == true ? UiLoading.loadingBlock() : Container()
         ],
       ),
     );
